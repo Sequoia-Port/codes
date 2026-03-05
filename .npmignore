@@ -1,0 +1,9 @@
+node_modules/
+.claude/
+src/
+skills/
+.env*
+.DS_Store
+.gitignore
+tsconfig.json
+tsup.config.ts

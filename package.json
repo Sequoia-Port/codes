@@ -1,0 +1,41 @@
+{
+  "name": "@sequoiaport/codes",
+  "version": "0.1.0-beta.1",
+  "description": "Retrieve ICD-10, CPT, SNOMED, and more medical codes via the Sequoia Codes API.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup"
+  },
+  "keywords": [
+    "sequoia",
+    "sequoiaport",
+    "icd10",
+    "cpt",
+    "hcpcs",
+    "loinc",
+    "rxnorm",
+    "snomed",
+    "lcd",
+    "ncd",
+    "clinical",
+    "codes",
+    "medical",
+    "coding",
+    "api",
+    "sdk"
+  ],
+  "author": "wconvery",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.2"
+  }
+}
