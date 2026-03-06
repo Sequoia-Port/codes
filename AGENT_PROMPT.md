@@ -4,7 +4,7 @@ You now have access to the SequoiaCodex medical coding API. Use it to search and
 
 ## CRITICAL: Take things one step at a time
 
-Do NOT try to do everything at once. Complete **Setup** fully before moving on to **Usage**.
+Do NOT try to do everything at once. Complete each step in **Setup** fully before moving on to the next.
 
 ## Domain Guide — READ THIS CAREFULLY
 
@@ -17,13 +17,11 @@ There are TWO different domains. Using the wrong one will fail.
 
 # Setup
 
-Complete both steps below before making any API queries.
+Complete all steps below in order before making any API queries.
 
 ## Step 1: Get an API key
 
-**Before doing anything else**, check if the `SEQUOIA_CODES_API_KEY` environment variable is already set. If it is, you already have a key — skip the rest of this step and go directly to Step 2.
-
-**Only if no key is found**, ask the user:
+**Before doing anything else**, ask the user:
 
 > "Do you already have a SequoiaCodex API key, or would you like me to generate one for you?"
 
@@ -85,91 +83,59 @@ When status is `"completed"`, the response includes the API key:
 
 **Store this key securely — it is only returned once.** The session expires after 10 minutes.
 
-## Step 2: Read the documentation
-
-Now that you have a key, read the docs at https://github.com/Sequoia-Port/codes to understand the available endpoints, parameters, and response formats. Do NOT guess at endpoints or parameters — always consult the docs first.
-
-**Once you have reviewed the docs, you are ready to move on to Usage.**
-
----
-
-# Usage
-
-You must have an API key and have read the documentation before proceeding.
-
-## Making API requests
-
-Use **api.sequoiacodes.com** for ALL data queries. Run queries using `curl` via a shell/bash tool.
+Display the full key to the user in this format:
 
 ```
-Base URL: https://api.sequoiacodes.com
-Auth header: Authorization: Bearer {api_key}
-Method: GET for all endpoints
-URL pattern: /v1/{system}/{action}?{params}
+SEQUOIA_CODES_API_KEY=sk_live_seq_abc123... (show the whole key)
 ```
 
-### Available Endpoints
+Show the **complete key** — this is the only time it will ever be returned, so the user must be able to copy it.
 
-| System   | Action                    | Params                             |
-|----------|---------------------------|------------------------------------|
-| icd10    | searchCode                | query, limit?, billingOnly?        |
-| icd10    | identifyCode              | code                               |
-| icd10    | getChapters               | (none)                             |
-| cpt      | searchCode                | query, limit?                      |
-| cpt      | identifyCode              | code                               |
-| cpt      | getCost                   | code                               |
-| cpt      | linkIcd10                 | code                               |
-| hcpcs    | searchCode                | query, limit?                      |
-| hcpcs    | identifyCode              | code                               |
-| hcpcs    | getCost                   | code                               |
-| snomed   | searchCode                | query, limit?                      |
-| snomed   | identifyCode              | code                               |
-| rxnorm   | searchCode                | query, limit?                      |
-| rxnorm   | identifyCode              | type (ndc or rxcui), code          |
-| rxnorm   | getIngredients            | rxcui                              |
-| loinc    | searchCode                | query, limit?                      |
-| loinc    | identifyCode              | code                               |
-| loinc    | getPanelMembers           | code                               |
-| lcd      | searchGuidelines          | query, limit?                      |
-| lcd      | identifyGuideline         | id                                 |
-| ncd      | searchGuidelines          | query, limit?                      |
-| ncd      | identifyGuideline         | id?, section?                      |
-| clinical | checkCoverage             | (see /v1/clinical/getMetadata)     |
-| clinical | getProceduresForDiagnosis | (see /v1/clinical/getMetadata)     |
-| clinical | getMetadata               | (none)                             |
+## Step 2: Determine your environment
 
-All search endpoints accept `query` (string) and optional `limit` (1–200).
-Use `searchCode` to find codes by description. Use `identifyCode` to look up a specific code.
+After you have the API key, figure out what kind of environment you are running in. This determines how you integrate.
 
-### Example
+### Option A: You are in a user's codebase
 
-```bash
-curl -s "https://api.sequoiacodes.com/v1/icd10/searchCode?query=hypertension" \
-  -H "Authorization: Bearer sk_live_seq_..."
-```
+You can tell if you're in a codebase if there is a `package.json`, project files, a git repo, etc.
 
-```json
-{
-  "success": true,
-  "data": {
-    "query": "hypertension",
-    "count": 3,
-    "results": [
-      {
-        "code": "I10",
-        "short_description": "Essential (primary) hypertension",
-        "long_description": "Essential (primary) hypertension",
-        "is_billable": true,
-        "chapter": "IX",
-        "similarity": 0.98
-      }
-    ]
-  },
-  "version": "v1"
-}
-```
+Ask the user:
 
-Responses follow a consistent `{ success, data, version }` envelope.
+> "Would you like me to set up the SequoiaCodex SDK in your project? I'll install the package and configure it with your API key."
+
+- **If they agree**: Run `npm install @sequoiaport/codes` (or the appropriate package manager), then add `SEQUOIA_CODES_API_KEY` to the project's `.env` or `.env.local` file. Then proceed to Step 3.
+- **If they decline**: Keep the key in memory for the current session and proceed to Step 3.
+
+### Option B: You are an agent in your own sandbox/environment
+
+You are in a standalone agent environment (no user codebase — e.g., a chat agent, Claude Desktop, an AI sandbox).
+
+Ask the user:
+
+> "Would you like me to install SequoiaCodex as a skill so I can query medical codes natively? This will give me direct access to all code search and lookup tools."
+
+- **If they agree**:
+  1. Run `npx skills add sequoia-port/codes` to download the skills and MCP server configuration.
+  2. Read the downloaded skill files for MCP setup instructions.
+  3. Configure the MCP server with the API key so you have native tool access.
+  4. Once the MCP server is running, you now have direct tool access — proceed to Step 3.
+- **If they decline**: Keep the key in memory for the current session and proceed to Step 3.
+
+### Option C: Neither — no shell access or isolated environment
+
+If you cannot run commands or determine your environment, simply show the user the API key and tell them:
+
+> "Here's your API key. You can use it to query the SequoiaCodex API directly. See the documentation for endpoint details."
+
+Then proceed to Step 3.
+
+## Step 3: Read the documentation
+
+For full endpoint details, parameter descriptions, response schemas, and usage examples, refer to the GitHub README:
+
+**https://github.com/Sequoia-Port/codes**
+
+Do NOT guess at endpoints or parameters — always consult the docs first.
 
 ---
 
