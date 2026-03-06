@@ -234,12 +234,12 @@ This SDK includes agent skills compatible with the [Vercel Agent Skills](https:/
 npx skills add sequoia-port/codes
 
 # Or install individual skills
-npx skills add sequoia-port/codes/icd-10-codes
-npx skills add sequoia-port/codes/cpt-codes
-npx skills add sequoia-port/codes/snomed-codes
-npx skills add sequoia-port/codes/hcpcs-codes
-npx skills add sequoia-port/codes/loinc-codes
-npx skills add sequoia-port/codes/rxnorm-codes
+npx skills add sequoia-port/codes --skill icd-10-codes
+npx skills add sequoia-port/codes --skill cpt-codes
+npx skills add sequoia-port/codes --skill snomed-codes
+npx skills add sequoia-port/codes --skill hcpcs-codes
+npx skills add sequoia-port/codes --skill loinc-codes
+npx skills add sequoia-port/codes --skill rxnorm-codes
 ```
 
 ### Available Skills
