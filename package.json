@@ -1,6 +1,6 @@
 {
   "name": "@sequoiaport/codes",
-  "version": "0.1.0-beta.0",
+  "version": "0.1.0-beta.1",
   "description": "Retrieve ICD-10, CPT, SNOMED, and more medical codes via the Sequoia Codes API.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -29,6 +29,14 @@
     "api",
     "sdk"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sequoia-Port/codes.git"
+  },
+  "homepage": "https://github.com/Sequoia-Port/codes",
+  "bugs": {
+    "url": "https://github.com/Sequoia-Port/codes/issues"
+  },
   "author": "wconvery",
   "license": "MIT",
   "publishConfig": {
