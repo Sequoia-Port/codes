@@ -18,9 +18,6 @@ export const Icd10CodeSchema = z.object({
 	is_billable: z.boolean().optional(),
 	valid_for_submission: z.boolean().optional(),
 	similarity: z.number().optional(),
-	rrf_score: z.number().optional(),
-	text_score: z.number().optional(),
-	match_type: z.string().optional(),
 });
 
 /** ICD-10 chapter */
@@ -39,8 +36,6 @@ export const SearchHybridOutputSchema = z.object({
 	query: z.string(),
 	count: z.number(),
 	results: z.array(Icd10CodeSchema),
-	search_mode: z.literal("hybrid"),
-	vector_weight: z.number().optional(),
 });
 
 /** lookup_code output */

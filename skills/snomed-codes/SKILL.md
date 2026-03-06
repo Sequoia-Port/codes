@@ -19,12 +19,11 @@ Search and lookup SNOMED CT clinical concepts via the `@sequoiaport/codes` packa
 
 ## Getting an API Key
 
-If the user does not have a `SEQUOIA_CODES_API_KEY`, obtain one via the Agent Auth API on the portal (`https://sequoiacodes.com`) — not `api.sequoiacodes.com`.
+First check if `SEQUOIA_CODES_API_KEY` is already set in the environment. If it is, skip key generation entirely and proceed to usage. Only if no key exists, see [AGENT_PROMPT.md](../../AGENT_PROMPT.md) for how your agent can obtain one via the agent auth flow.
 
-1. `POST https://sequoiacodes.com/api/agent-auth/session` (optional body: `{ "agent_id": "your-agent" }`). Returns `session_id`, `session_secret`, `auth_url`.
-2. Present `auth_url` to the user — they click to sign in/sign up (free: 1,000 requests/month, no credit card).
-3. Poll `GET https://sequoiacodes.com/api/agent-auth/session/{session_id}` with `Authorization: Bearer {session_secret}` every 3s until `status: "completed"` returns `api_key`.
-4. Store the key as `SEQUOIA_CODES_API_KEY`. It is returned exactly once.
+## MCP Server
+
+Once you have an API key, you can set up the MCP server for direct tool access from Claude Code, Cursor, or VS Code. See [MCP_SETUP.md](../../MCP_SETUP.md).
 
 ## How It Works
 

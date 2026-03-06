@@ -15,9 +15,6 @@ export const SnomedConceptSchema = z.object({
 	active: z.boolean().optional(),
 	module_id: z.string().optional(),
 	similarity: z.number().optional(),
-	rrf_score: z.number().optional(),
-	text_score: z.number().optional(),
-	match_type: z.string().optional(),
 	icd10_codes: z.array(z.string()).optional(),
 });
 
@@ -54,8 +51,6 @@ export const SearchHybridOutputSchema = z.object({
 	query: z.string(),
 	count: z.number(),
 	results: z.array(SnomedConceptSchema),
-	search_mode: z.literal("hybrid"),
-	vector_weight: z.number().optional(),
 });
 
 /** lookup_code output */

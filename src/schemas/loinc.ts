@@ -34,8 +34,6 @@ export const LoincCodeSchema = z.object({
 	mapped_to: z.string().optional(),
 	status: z.string().optional(),
 	similarity: z.number().optional(),
-	rrf_score: z.number().optional(),
-	match_type: z.string().optional(),
 });
 
 /** Panel member */
