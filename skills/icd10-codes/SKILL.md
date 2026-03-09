@@ -1,5 +1,5 @@
 ---
-name: icd-10-codes
+name: icd10-codes
 description: ICD-10 diagnosis code search and lookup. Activates when tasks involve finding diagnosis codes, billing codes, or mapping clinical conditions to ICD-10 codes.
 license: MIT
 author: SequoiaPort

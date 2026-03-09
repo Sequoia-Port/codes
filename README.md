@@ -234,7 +234,7 @@ This SDK includes agent skills compatible with the [Vercel Agent Skills](https:/
 npx skills add sequoia-port/codes
 
 # Or install individual skills
-npx skills add sequoia-port/codes --skill icd-10-codes
+npx skills add sequoia-port/codes --skill icd10-codes
 npx skills add sequoia-port/codes --skill cpt-codes
 npx skills add sequoia-port/codes --skill snomed-codes
 npx skills add sequoia-port/codes --skill hcpcs-codes
@@ -246,7 +246,7 @@ npx skills add sequoia-port/codes --skill rxnorm-codes
 
 | Skill | Description |
 |-------|-------------|
-| `icd-10-codes` | ICD-10 diagnosis code search and lookup |
+| `icd10-codes` | ICD-10 diagnosis code search and lookup |
 | `cpt-codes` | CPT procedure code search, lookup, cost/RVU, and ICD-10 linking |
 | `snomed-codes` | SNOMED CT clinical terminology search and lookup |
 | `hcpcs-codes` | HCPCS Level II code search, lookup, and cost |
