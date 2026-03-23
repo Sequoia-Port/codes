@@ -19,6 +19,7 @@ export {
 	RxnormCategory,
 	LcdCategory,
 	NcdCategory,
+	LifeExpectancyCategory,
 } from "./engines";
 
 // =============================================================================
@@ -55,6 +56,10 @@ export type {
 	// NCD
 	NcdSearchGuidelinesInput,
 	NcdIdentifyGuidelineInput,
+	// Life Expectancy
+	LELookupByAgeInput,
+	LELookupBatchInput,
+	LEGetTableInput,
 } from "./engines";
 
 // =============================================================================
@@ -130,3 +135,15 @@ export type {
 	RxnormLookupRxcuiOutput,
 	RxnormGetIngredientsOutput,
 } from "./schemas/rxnorm";
+
+// Life Expectancy
+export type {
+	LifeExpectancyResult,
+	VersionInfo as LEVersionInfo,
+	LELookupByAgeOutput,
+	LELookupBatchOutput,
+	LEGetTableOutput,
+	LEGetVersionOutput,
+	LEHealthOutput,
+	LEGetStatsOutput,
+} from "./schemas/life-expectancy";

@@ -47,6 +47,15 @@ import type {
 	RxnormGetIngredientsOutput,
 } from "./schemas/rxnorm";
 
+import type {
+	LELookupByAgeOutput,
+	LELookupBatchOutput,
+	LEGetTableOutput,
+	LEGetVersionOutput,
+	LEHealthOutput,
+	LEGetStatsOutput,
+} from "./schemas/life-expectancy";
+
 // =============================================================================
 // Shared Types
 // =============================================================================
@@ -481,5 +490,81 @@ export class NcdCategory {
 			id: validated.id,
 			section: validated.section,
 		});
+	}
+}
+
+// =============================================================================
+// Life Expectancy Category - client.lifeExpectancy.*
+// =============================================================================
+
+const LELookupByAgeInputSchema = z.object({
+	age: z.number().int().min(0).max(125),
+	gender: z.enum(["male", "female", "total"]).optional(),
+});
+
+const LELookupBatchInputSchema = z.object({
+	ages: z.array(z.number().int().min(0).max(125)).min(1).max(500),
+	gender: z.enum(["male", "female", "total"]).optional(),
+});
+
+const LEGetTableInputSchema = z.object({
+	gender: z.enum(["male", "female", "total"]).optional(),
+	min_age: z.number().int().min(0).optional(),
+	max_age: z.number().int().max(125).optional(),
+});
+
+export type LELookupByAgeInput = z.infer<typeof LELookupByAgeInputSchema>;
+export type LELookupBatchInput = z.infer<typeof LELookupBatchInputSchema>;
+export type LEGetTableInput = z.infer<typeof LEGetTableInputSchema>;
+
+/**
+ * Life Expectancy actuarial tables (CDC/CMS WCMSA standard).
+ * - lookupByAge(): Get life expectancy for a specific age
+ * - lookupBatch(): Batch lookup for multiple ages
+ * - getTable(): Get the full actuarial life table (or a filtered range)
+ * - getVersion(): Get active dataset version metadata
+ * - getStats(): Get database statistics
+ * - health(): Engine health check
+ */
+export class LifeExpectancyCategory {
+	constructor(private request: RequestFunction) {}
+
+	async lookupByAge(input: LELookupByAgeInput): Promise<LELookupByAgeOutput> {
+		const validated = LELookupByAgeInputSchema.parse(input);
+		return this.request<LELookupByAgeOutput>(
+			"lifeExpectancy/lookupByAge",
+			validated,
+		);
+	}
+
+	async lookupBatch(input: LELookupBatchInput): Promise<LELookupBatchOutput> {
+		const validated = LELookupBatchInputSchema.parse(input);
+		return this.request<LELookupBatchOutput>(
+			"lifeExpectancy/lookupBatch",
+			validated,
+		);
+	}
+
+	async getTable(input?: LEGetTableInput): Promise<LEGetTableOutput> {
+		const validated = LEGetTableInputSchema.parse(input ?? {});
+		return this.request<LEGetTableOutput>(
+			"lifeExpectancy/getTable",
+			validated,
+		);
+	}
+
+	async getVersion(): Promise<LEGetVersionOutput> {
+		return this.request<LEGetVersionOutput>(
+			"lifeExpectancy/getVersion",
+			{},
+		);
+	}
+
+	async getStats(): Promise<LEGetStatsOutput> {
+		return this.request<LEGetStatsOutput>("lifeExpectancy/getStats", {});
+	}
+
+	async health(): Promise<LEHealthOutput> {
+		return this.request<LEHealthOutput>("lifeExpectancy/health", {});
 	}
 }

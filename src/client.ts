@@ -7,6 +7,7 @@ import {
 	HcpcsCategory,
 	Icd10Category,
 	LcdCategory,
+	LifeExpectancyCategory,
 	LoincCategory,
 	NcdCategory,
 	RxnormCategory,
@@ -122,6 +123,9 @@ const DEFAULT_VERSION = "v1";
  * const lcd = await client.lcd.searchGuidelines({ query: "MRI" });
  * const ncd = await client.ncd.identifyGuideline({ section: "220.6" });
  *
+ * // Life expectancy (CDC/CMS WCMSA)
+ * const le = await client.lifeExpectancy.lookupByAge({ age: 65 });
+ *
  * // Orchestrator endpoints
  * const coverage = await client.clinical.checkCoverage({ cpt_code: "99213" });
  * const procedures = await client.clinical.getProceduresForDiagnosis({ icd10_code: "E11.9" });
@@ -159,6 +163,13 @@ export class SequoiaCodesClient {
 	readonly rxnorm: RxnormCategory;
 
 	// ==========================================================================
+	// Actuarial / Reference Data Categories
+	// ==========================================================================
+
+	/** Life Expectancy actuarial tables (CDC/CMS WCMSA standard) */
+	readonly lifeExpectancy: LifeExpectancyCategory;
+
+	// ==========================================================================
 	// Guideline Categories
 	// ==========================================================================
 
@@ -186,6 +197,9 @@ export class SequoiaCodesClient {
 		this.hcpcs = new HcpcsCategory(boundRequest);
 		this.loinc = new LoincCategory(boundRequest);
 		this.rxnorm = new RxnormCategory(boundRequest);
+
+		// Actuarial / reference data categories
+		this.lifeExpectancy = new LifeExpectancyCategory(boundRequest);
 
 		// Guideline categories
 		this.lcd = new LcdCategory(boundRequest);

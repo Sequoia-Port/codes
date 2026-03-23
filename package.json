@@ -1,6 +1,6 @@
 {
   "name": "@sequoiaport/codes",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Retrieve ICD-10, CPT, SNOMED, and more medical codes via the Sequoia Codes API.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -22,6 +22,8 @@
     "snomed",
     "lcd",
     "ncd",
+    "life-expectancy",
+    "actuarial",
     "clinical",
     "codes",
     "medical",
