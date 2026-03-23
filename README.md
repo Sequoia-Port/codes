@@ -2,7 +2,7 @@
 
 Official TypeScript/JavaScript SDK for the [Sequoia Codes API](https://sequoiacodes.com) — a unified API for medical code search and lookup.
 
-Query **ICD-10**, **CPT**, **HCPCS**, **SNOMED CT**, **LOINC**, and **RxNorm** codes through a single client. The SDK also covers **LCD/NCD** coverage guidelines and a **clinical orchestrator** for cross-system operations like coverage checks and diagnosis-to-procedure mapping.
+Query **ICD-10**, **CPT**, **HCPCS**, **SNOMED CT**, **LOINC**, and **RxNorm** codes through a single client. The SDK also covers **LCD/NCD** coverage guidelines, **Life Expectancy** actuarial tables (CDC/CMS WCMSA standard), and a **clinical orchestrator** for cross-system operations like coverage checks and diagnosis-to-procedure mapping.
 
 - Fully typed with Zod-validated responses
 - Supports both ESM and CommonJS
@@ -46,6 +46,10 @@ console.log(cptResults.results);
 - **`client.hcpcs`** - HCPCS procedure codes
 - **`client.loinc`** - LOINC laboratory test codes
 - **`client.rxnorm`** - RxNorm drug/medication codes
+
+### Actuarial / Reference Data
+
+- **`client.lifeExpectancy`** - CDC/CMS WCMSA life expectancy actuarial tables
 
 ### Guidelines
 
@@ -156,6 +160,29 @@ const ncdResults = await client.ncd.searchGuidelines({ query: "oxygen" });
 const ncd = await client.ncd.identifyGuideline({ section: "220.6" });
 ```
 
+### Life Expectancy
+
+```typescript
+// Look up life expectancy for a 65-year-old
+const le = await client.lifeExpectancy.lookupByAge({ age: 65 });
+console.log(le.result?.ex); // e.g. 19.09 years
+
+// Batch lookup for multiple ages
+const batch = await client.lifeExpectancy.lookupBatch({
+  ages: [30, 50, 70],
+  gender: "female",
+});
+
+// Get the full actuarial life table
+const table = await client.lifeExpectancy.getTable({ gender: "total" });
+
+// Get active dataset version metadata
+const version = await client.lifeExpectancy.getVersion();
+
+// Health check
+const health = await client.lifeExpectancy.health();
+```
+
 ### Clinical Orchestrator
 
 ```typescript
@@ -220,6 +247,8 @@ import type {
   CPTCode,
   LoincCode,
   RxnormDrug,
+  LifeExpectancyResult,
+  LEVersionInfo,
 } from "@sequoiaport/codes";
 ```
 
@@ -240,6 +269,7 @@ npx skills add sequoia-port/codes --skill snomed-codes
 npx skills add sequoia-port/codes --skill hcpcs-codes
 npx skills add sequoia-port/codes --skill loinc-codes
 npx skills add sequoia-port/codes --skill rxnorm-codes
+npx skills add sequoia-port/codes --skill life-expectancy
 ```
 
 ### Available Skills
@@ -252,6 +282,7 @@ npx skills add sequoia-port/codes --skill rxnorm-codes
 | `hcpcs-codes` | HCPCS Level II code search, lookup, and cost |
 | `loinc-codes` | LOINC laboratory test code search, lookup, and panel members |
 | `rxnorm-codes` | RxNorm drug code search, NDC/RXCUI lookup, and ingredients |
+| `life-expectancy` | CDC/CMS life expectancy actuarial table lookups for WCMSA calculations |
 
 Skills are compatible with Claude Code, Cursor, GitHub Copilot, Gemini, and [17+ other agents](https://skills.sh).
 
