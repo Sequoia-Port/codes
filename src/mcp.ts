@@ -153,6 +153,71 @@ server.tool(
 );
 
 // =============================================================================
+// Tool 4: ndcLookup
+// =============================================================================
+
+server.tool(
+	"ndcLookup",
+	"Look up, search, or explore the FDA NDC Directory. Actions: lookup (by NDC code), lookupBatch (multiple NDCs), search (by drug name), fuzzy (misspelling-tolerant search), getProduct (by product NDC), getLabeler (by manufacturer), getPackages (by product NDC), crossRef (NDC-to-RxNorm).",
+	{
+		action: z
+			.enum(["lookup", "lookupBatch", "search", "fuzzy", "getProduct", "getLabeler", "getPackages", "crossRef", "stats"])
+			.default("lookup")
+			.describe("The NDC action to perform"),
+		ndc: z.string().optional().describe("NDC code (for lookup, crossRef)"),
+		ndcs: z.array(z.string()).optional().describe("Array of NDC codes (for lookupBatch)"),
+		query: z.string().optional().describe("Drug name to search (for search, fuzzy)"),
+		productNdc: z.string().optional().describe("Product NDC in 5-4 format (for getProduct, getPackages)"),
+		labeler: z.string().optional().describe("Manufacturer name (for getLabeler)"),
+		productType: z.string().optional().describe("Filter by product type (for search)"),
+		limit: z.number().int().min(1).max(100).optional().describe("Max results"),
+	},
+	async ({ action, ndc, ndcs, query, productNdc, labeler, productType, limit }) => {
+		let result: unknown;
+
+		switch (action) {
+			case "lookup":
+				if (!ndc) return { content: [{ type: "text" as const, text: "ndc is required for lookup" }] };
+				result = await client.ndc.lookupNdc({ ndc });
+				break;
+			case "lookupBatch":
+				if (!ndcs || ndcs.length === 0) return { content: [{ type: "text" as const, text: "ndcs array is required for lookupBatch" }] };
+				result = await client.ndc.lookupBatch({ ndcs });
+				break;
+			case "search":
+				if (!query) return { content: [{ type: "text" as const, text: "query is required for search" }] };
+				result = await client.ndc.searchProducts({ query, productType, limit });
+				break;
+			case "fuzzy":
+				if (!query) return { content: [{ type: "text" as const, text: "query is required for fuzzy search" }] };
+				result = await client.ndc.searchFuzzy({ query, limit });
+				break;
+			case "getProduct":
+				if (!productNdc) return { content: [{ type: "text" as const, text: "productNdc is required for getProduct" }] };
+				result = await client.ndc.getProduct({ productNdc });
+				break;
+			case "getLabeler":
+				if (!labeler) return { content: [{ type: "text" as const, text: "labeler is required for getLabeler" }] };
+				result = await client.ndc.getLabeler({ labeler, limit });
+				break;
+			case "getPackages":
+				if (!productNdc) return { content: [{ type: "text" as const, text: "productNdc is required for getPackages" }] };
+				result = await client.ndc.getPackages({ productNdc });
+				break;
+			case "crossRef":
+				if (!ndc) return { content: [{ type: "text" as const, text: "ndc is required for crossRef" }] };
+				result = await client.ndc.crossRefRxcui({ ndc });
+				break;
+			case "stats":
+				result = await client.ndc.getStats();
+				break;
+		}
+
+		return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
+	},
+);
+
+// =============================================================================
 // Start
 // =============================================================================
 

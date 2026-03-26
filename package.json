@@ -1,7 +1,7 @@
 {
   "name": "@sequoiaport/codes",
-  "version": "0.1.2-beta.3",
-  "description": "Retrieve ICD-10, CPT, SNOMED, and more medical codes via the Sequoia Codes API.",
+  "version": "0.1.3-beta.3",
+  "description": "Retrieve ICD-10, CPT, SNOMED, RxNorm, LOINC, NDC, and more medical codes via the Sequoia Codes API.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -19,6 +19,7 @@
     "hcpcs",
     "loinc",
     "rxnorm",
+    "ndc",
     "snomed",
     "lcd",
     "ncd",

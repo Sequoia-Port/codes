@@ -56,6 +56,19 @@ import type {
 	LEGetStatsOutput,
 } from "./schemas/life-expectancy";
 
+import type {
+	NdcLookupOutput,
+	NdcBatchLookupOutput,
+	NdcSearchOutput,
+	NdcFuzzySearchOutput,
+	NdcGetProductOutput,
+	NdcGetLabelerOutput,
+	NdcGetPackagesOutput,
+	NdcCrossRefOutput,
+	NdcGetStatsOutput,
+	NdcHealthOutput,
+} from "./schemas/ndc";
+
 // =============================================================================
 // Shared Types
 // =============================================================================
@@ -566,5 +579,139 @@ export class LifeExpectancyCategory {
 
 	async health(): Promise<LEHealthOutput> {
 		return this.request<LEHealthOutput>("lifeExpectancy/health", {});
+	}
+}
+
+// =============================================================================
+// NDC Category - client.ndc.*
+// =============================================================================
+
+const NdcLookupInputSchema = z.object({
+	ndc: z.string().min(1),
+});
+
+const NdcBatchLookupInputSchema = z.object({
+	ndcs: z.array(z.string().min(1)).min(1).max(25),
+});
+
+const NdcSearchInputSchema = z.object({
+	query: z.string().min(1),
+	productType: z.string().optional(),
+	limit: z.number().int().min(1).max(100).optional(),
+});
+
+const NdcFuzzySearchInputSchema = z.object({
+	query: z.string().min(1),
+	limit: z.number().int().min(1).max(50).optional(),
+});
+
+const NdcGetProductInputSchema = z.object({
+	productNdc: z.string().min(1),
+});
+
+const NdcGetLabelerInputSchema = z.object({
+	labeler: z.string().min(1),
+	limit: z.number().int().min(1).max(100).optional(),
+});
+
+const NdcGetPackagesInputSchema = z.object({
+	productNdc: z.string().min(1),
+});
+
+const NdcCrossRefInputSchema = z.object({
+	ndc: z.string().min(1),
+});
+
+export type NdcLookupInput = z.infer<typeof NdcLookupInputSchema>;
+export type NdcBatchLookupInput = z.infer<typeof NdcBatchLookupInputSchema>;
+export type NdcSearchInput = z.infer<typeof NdcSearchInputSchema>;
+export type NdcFuzzySearchInput = z.infer<typeof NdcFuzzySearchInputSchema>;
+export type NdcGetProductInput = z.infer<typeof NdcGetProductInputSchema>;
+export type NdcGetLabelerInput = z.infer<typeof NdcGetLabelerInputSchema>;
+export type NdcGetPackagesInput = z.infer<typeof NdcGetPackagesInputSchema>;
+export type NdcCrossRefInput = z.infer<typeof NdcCrossRefInputSchema>;
+
+/**
+ * FDA NDC Directory - drug product identification.
+ * - lookupNdc(): Look up a product by package NDC (any format)
+ * - lookupBatch(): Batch lookup multiple NDCs
+ * - searchProducts(): Full-text search by drug name
+ * - searchFuzzy(): Fuzzy trigram search (handles misspellings)
+ * - getProduct(): Get full product details by product NDC
+ * - getLabeler(): Get all products from a labeler/manufacturer
+ * - getPackages(): Get all packages for a product NDC
+ * - crossRefRxcui(): Cross-reference NDC with RxNorm RXCUI
+ * - getStats(): Get database statistics
+ * - health(): Engine health check
+ */
+export class NdcCategory {
+	constructor(private request: RequestFunction) {}
+
+	async lookupNdc(input: NdcLookupInput): Promise<NdcLookupOutput> {
+		const validated = NdcLookupInputSchema.parse(input);
+		return this.request<NdcLookupOutput>("ndc/lookupNdc", {
+			ndc: validated.ndc,
+		});
+	}
+
+	async lookupBatch(input: NdcBatchLookupInput): Promise<NdcBatchLookupOutput> {
+		const validated = NdcBatchLookupInputSchema.parse(input);
+		return this.request<NdcBatchLookupOutput>("ndc/lookupBatch", {
+			ndcs: validated.ndcs,
+		});
+	}
+
+	async searchProducts(input: NdcSearchInput): Promise<NdcSearchOutput> {
+		const validated = NdcSearchInputSchema.parse(input);
+		return this.request<NdcSearchOutput>("ndc/searchProducts", {
+			query: validated.query,
+			product_type: validated.productType,
+			limit: validated.limit,
+		});
+	}
+
+	async searchFuzzy(input: NdcFuzzySearchInput): Promise<NdcFuzzySearchOutput> {
+		const validated = NdcFuzzySearchInputSchema.parse(input);
+		return this.request<NdcFuzzySearchOutput>("ndc/searchFuzzy", {
+			query: validated.query,
+			limit: validated.limit,
+		});
+	}
+
+	async getProduct(input: NdcGetProductInput): Promise<NdcGetProductOutput> {
+		const validated = NdcGetProductInputSchema.parse(input);
+		return this.request<NdcGetProductOutput>("ndc/getProduct", {
+			product_ndc: validated.productNdc,
+		});
+	}
+
+	async getLabeler(input: NdcGetLabelerInput): Promise<NdcGetLabelerOutput> {
+		const validated = NdcGetLabelerInputSchema.parse(input);
+		return this.request<NdcGetLabelerOutput>("ndc/getLabeler", {
+			labeler: validated.labeler,
+			limit: validated.limit,
+		});
+	}
+
+	async getPackages(input: NdcGetPackagesInput): Promise<NdcGetPackagesOutput> {
+		const validated = NdcGetPackagesInputSchema.parse(input);
+		return this.request<NdcGetPackagesOutput>("ndc/getPackages", {
+			product_ndc: validated.productNdc,
+		});
+	}
+
+	async crossRefRxcui(input: NdcCrossRefInput): Promise<NdcCrossRefOutput> {
+		const validated = NdcCrossRefInputSchema.parse(input);
+		return this.request<NdcCrossRefOutput>("ndc/crossRefRxcui", {
+			ndc: validated.ndc,
+		});
+	}
+
+	async getStats(): Promise<NdcGetStatsOutput> {
+		return this.request<NdcGetStatsOutput>("ndc/getStats", {});
+	}
+
+	async health(): Promise<NdcHealthOutput> {
+		return this.request<NdcHealthOutput>("ndc/health", {});
 	}
 }

@@ -17,6 +17,7 @@ export {
 	HcpcsCategory,
 	LoincCategory,
 	RxnormCategory,
+	NdcCategory,
 	LcdCategory,
 	NcdCategory,
 	LifeExpectancyCategory,
@@ -50,6 +51,15 @@ export type {
 	RxnormSearchCodeInput,
 	RxnormIdentifyCodeInput,
 	RxnormGetIngredientsInput,
+	// NDC
+	NdcLookupInput,
+	NdcBatchLookupInput,
+	NdcSearchInput,
+	NdcFuzzySearchInput,
+	NdcGetProductInput,
+	NdcGetLabelerInput,
+	NdcGetPackagesInput,
+	NdcCrossRefInput,
 	// LCD
 	LcdSearchGuidelinesInput,
 	LcdIdentifyGuidelineInput,
@@ -135,6 +145,23 @@ export type {
 	RxnormLookupRxcuiOutput,
 	RxnormGetIngredientsOutput,
 } from "./schemas/rxnorm";
+
+// NDC
+export type {
+	NdcPackage,
+	NdcProduct,
+	NdcCrossRef,
+	NdcLookupOutput,
+	NdcBatchLookupOutput,
+	NdcSearchOutput,
+	NdcFuzzySearchOutput,
+	NdcGetProductOutput,
+	NdcGetLabelerOutput,
+	NdcGetPackagesOutput,
+	NdcCrossRefOutput,
+	NdcGetStatsOutput,
+	NdcHealthOutput,
+} from "./schemas/ndc";
 
 // Life Expectancy
 export type {

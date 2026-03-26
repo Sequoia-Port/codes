@@ -10,6 +10,7 @@ import {
 	LifeExpectancyCategory,
 	LoincCategory,
 	NcdCategory,
+	NdcCategory,
 	RxnormCategory,
 	SnomedCategory,
 } from "./engines";
@@ -123,6 +124,10 @@ const DEFAULT_VERSION = "v1";
  * const lcd = await client.lcd.searchGuidelines({ query: "MRI" });
  * const ncd = await client.ncd.identifyGuideline({ section: "220.6" });
  *
+ * // FDA NDC Directory
+ * const ndc = await client.ndc.lookupNdc({ ndc: "0071-0157-23" });
+ * const search = await client.ndc.searchProducts({ query: "Lipitor" });
+ *
  * // Life expectancy (CDC/CMS WCMSA)
  * const le = await client.lifeExpectancy.lookupByAge({ age: 65 });
  *
@@ -161,6 +166,8 @@ export class SequoiaCodesClient {
 	readonly loinc: LoincCategory;
 	/** RxNorm drug/medication codes */
 	readonly rxnorm: RxnormCategory;
+	/** FDA NDC Directory - drug product identification (133K products, 248K packages) */
+	readonly ndc: NdcCategory;
 
 	// ==========================================================================
 	// Actuarial / Reference Data Categories
@@ -197,6 +204,7 @@ export class SequoiaCodesClient {
 		this.hcpcs = new HcpcsCategory(boundRequest);
 		this.loinc = new LoincCategory(boundRequest);
 		this.rxnorm = new RxnormCategory(boundRequest);
+		this.ndc = new NdcCategory(boundRequest);
 
 		// Actuarial / reference data categories
 		this.lifeExpectancy = new LifeExpectancyCategory(boundRequest);
