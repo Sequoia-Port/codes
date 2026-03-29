@@ -185,6 +185,8 @@ export type {
 
 // Cost
 export type {
+	MethodologyEntry,
+	Methodology,
 	TierBreakdown,
 	TieredLineItem,
 	MPFSRate,

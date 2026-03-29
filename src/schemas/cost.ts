@@ -1,6 +1,23 @@
 import { z } from "zod";
 
 // =============================================================================
+// Methodology Descriptor Schema
+// =============================================================================
+
+/** A single methodology descriptor explaining a cost component */
+const MethodologyEntrySchema = z.object({
+	label: z.string(),
+	description: z.string(),
+	formula: z.string(),
+	source: z.string(),
+	authority: z.string().optional(),
+	note: z.string().optional(),
+});
+
+/** Map of cost component key → methodology descriptor */
+const MethodologySchema = z.record(z.string(), MethodologyEntrySchema);
+
+// =============================================================================
 // Entity Schemas
 // =============================================================================
 
@@ -112,26 +129,31 @@ export const ProjectCostTieredOutputSchema = z.object({
 			})
 			.optional(),
 	}),
+	methodology: MethodologySchema.optional(),
 });
 
 /** projectCost (Medicare-only) output */
 export const ProjectCostOutputSchema = z.object({
 	result: z.record(z.string(), z.unknown()),
+	methodology: MethodologySchema.optional(),
 });
 
 /** lookupFacilityFee output */
 export const LookupFacilityFeeOutputSchema = z.object({
 	result: z.record(z.string(), z.unknown()),
+	methodology: MethodologySchema.optional(),
 });
 
 /** lookupMPFS output */
 export const LookupMPFSOutputSchema = z.object({
 	result: MPFSRateSchema.optional(),
+	methodology: MethodologySchema.optional(),
 });
 
 /** lookupAnesthesia output */
 export const LookupAnesthesiaOutputSchema = z.object({
 	result: z.record(z.string(), z.unknown()),
+	methodology: MethodologySchema.optional(),
 });
 
 /** getFacilities output */
@@ -155,6 +177,8 @@ export const CostGetStatsOutputSchema = z.object({
 // TypeScript Types
 // =============================================================================
 
+export type MethodologyEntry = z.infer<typeof MethodologyEntrySchema>;
+export type Methodology = z.infer<typeof MethodologySchema>;
 export type TierBreakdown = z.infer<typeof TierBreakdownSchema>;
 export type TieredLineItem = z.infer<typeof TieredLineItemSchema>;
 export type MPFSRate = z.infer<typeof MPFSRateSchema>;

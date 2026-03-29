@@ -1,6 +1,6 @@
 {
   "name": "@sequoiaport/codes",
-  "version": "0.1.4-beta.4",
+  "version": "0.1.4-beta.5",
   "description": "Retrieve ICD-10, CPT, SNOMED, RxNorm, LOINC, NDC, cost projections, and more medical codes via the Sequoia Codes API.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
