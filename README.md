@@ -2,7 +2,7 @@
 
 Official TypeScript/JavaScript SDK for the [Sequoia Codes API](https://sequoiacodes.com) — a unified API for medical code search and lookup.
 
-Query **ICD-10**, **CPT**, **HCPCS**, **SNOMED CT**, **LOINC**, and **RxNorm** codes through a single client. The SDK also covers **LCD/NCD** coverage guidelines, **Life Expectancy** actuarial tables (CDC/CMS WCMSA standard), and a **clinical orchestrator** for cross-system operations like coverage checks and diagnosis-to-procedure mapping.
+Query **ICD-10**, **CPT**, **HCPCS**, **SNOMED CT**, **LOINC**, **RxNorm**, and **NDC** codes through a single client. The SDK also covers **LCD/NCD** coverage guidelines, **Life Expectancy** actuarial tables (CDC/CMS WCMSA standard), **4-tier cost projections** (Medicare, Commercial, 80th Percentile, Billed Charges), and a **clinical orchestrator** for cross-system operations like coverage checks and diagnosis-to-procedure mapping.
 
 - Fully typed with Zod-validated responses
 - Supports both ESM and CommonJS
@@ -47,9 +47,17 @@ console.log(cptResults.results);
 - **`client.loinc`** - LOINC laboratory test codes
 - **`client.rxnorm`** - RxNorm drug/medication codes
 
+### Drug Identification
+
+- **`client.ndc`** - FDA NDC Directory (drug product identification, package lookup, RxNorm cross-reference)
+
 ### Actuarial / Reference Data
 
 - **`client.lifeExpectancy`** - CDC/CMS WCMSA life expectancy actuarial tables
+
+### Cost Projection
+
+- **`client.cost`** - 4-tier surgical/procedural cost estimates (Medicare, Commercial, 80th %ile, Billed)
 
 ### Guidelines
 
@@ -142,6 +150,57 @@ const rxcuiResult = await client.rxnorm.identifyCode({
 
 // Get active ingredients
 const ingredients = await client.rxnorm.getIngredients({ rxcui: "861004" });
+```
+
+### NDC (Drug Products)
+
+```typescript
+// Look up a drug by NDC (any format: dashed, 10-digit, 11-digit)
+const product = await client.ndc.lookupNdc({ ndc: "0071-0157-23" });
+console.log(product.result?.brand_name); // "Lipitor"
+
+// Search by drug name
+const results = await client.ndc.searchProducts({ query: "metformin", limit: 10 });
+
+// Fuzzy search (handles misspellings)
+const fuzzy = await client.ndc.searchFuzzy({ query: "acetaminofen" });
+
+// Batch lookup
+const batch = await client.ndc.lookupBatch({ ndcs: ["0071-0157-23", "0006-3026-02"] });
+
+// Cross-reference with RxNorm
+const crossRef = await client.ndc.crossRefRxcui({ ndc: "0071-0157-23" });
+
+// Get packages for a product
+const packages = await client.ndc.getPackages({ productNdc: "0071-0157" });
+```
+
+### Cost Projection
+
+```typescript
+// Full 4-tier cost projection (Medicare, Commercial, 80th %ile, Billed)
+const tiered = await client.cost.projectCostTiered({
+  cpt_codes: ["27447"],
+  zip_code: "60601",
+  include_anesthesia: true,
+});
+console.log(tiered.result?.medicare.total);
+console.log(tiered.result?.commercial.total);
+
+// Medicare-only projection
+const medicare = await client.cost.projectCost({
+  cpt_codes: ["99213", "99214"],
+  zip_code: "10001",
+});
+
+// MPFS rate lookup
+const mpfs = await client.cost.lookupMPFS({ cpt_code: "99213", zip_code: "10001" });
+
+// DRG-based facility fee
+const fee = await client.cost.lookupFacilityFee({ cpt_code: "27447", zip_code: "60601" });
+
+// WCMSA designated medical centers
+const facilities = await client.cost.getFacilities({ zip_code: "60601" });
 ```
 
 ### Guidelines (LCD/NCD)
@@ -247,8 +306,13 @@ import type {
   CPTCode,
   LoincCode,
   RxnormDrug,
+  NdcProduct,
+  NdcPackage,
   LifeExpectancyResult,
   LEVersionInfo,
+  TierBreakdown,
+  MPFSRate,
+  CostProjectTieredOutput,
 } from "@sequoiaport/codes";
 ```
 
@@ -282,7 +346,9 @@ npx skills add sequoia-port/codes --skill life-expectancy
 | `hcpcs-codes` | HCPCS Level II code search, lookup, and cost |
 | `loinc-codes` | LOINC laboratory test code search, lookup, and panel members |
 | `rxnorm-codes` | RxNorm drug code search, NDC/RXCUI lookup, and ingredients |
+| `ndc-codes` | FDA NDC Directory lookup, product search, fuzzy search, and RxNorm cross-reference |
 | `life-expectancy` | CDC/CMS life expectancy actuarial table lookups for WCMSA calculations |
+| `cost-projection` | 4-tier surgical cost projections (Medicare, Commercial, 80th %ile, Billed Charges) |
 
 Skills are compatible with Claude Code, Cursor, GitHub Copilot, Gemini, and [17+ other agents](https://skills.sh).
 
