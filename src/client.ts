@@ -3,6 +3,7 @@ import type { ApiResponse, SequoiaCodesClientConfig } from "./types";
 
 // Import Engine Categories
 import {
+	CostCategory,
 	CptCategory,
 	HcpcsCategory,
 	Icd10Category,
@@ -131,6 +132,11 @@ const DEFAULT_VERSION = "v1";
  * // Life expectancy (CDC/CMS WCMSA)
  * const le = await client.lifeExpectancy.lookupByAge({ age: 65 });
  *
+ * // Cost projection (4-tier: Medicare, Commercial, 80th %ile, Billed)
+ * const cost = await client.cost.projectCostTiered({
+ *   cpt_codes: ["27447"], zip_code: "10001", include_anesthesia: true
+ * });
+ *
  * // Orchestrator endpoints
  * const coverage = await client.clinical.checkCoverage({ cpt_code: "99213" });
  * const procedures = await client.clinical.getProceduresForDiagnosis({ icd10_code: "E11.9" });
@@ -175,6 +181,8 @@ export class SequoiaCodesClient {
 
 	/** Life Expectancy actuarial tables (CDC/CMS WCMSA standard) */
 	readonly lifeExpectancy: LifeExpectancyCategory;
+	/** Cost Projection engine — 4-tier surgical/procedural cost estimates (CMS PFS/IPPS + RAND + BLS CPI) */
+	readonly cost: CostCategory;
 
 	// ==========================================================================
 	// Guideline Categories
@@ -208,6 +216,7 @@ export class SequoiaCodesClient {
 
 		// Actuarial / reference data categories
 		this.lifeExpectancy = new LifeExpectancyCategory(boundRequest);
+		this.cost = new CostCategory(boundRequest);
 
 		// Guideline categories
 		this.lcd = new LcdCategory(boundRequest);

@@ -57,6 +57,17 @@ import type {
 } from "./schemas/life-expectancy";
 
 import type {
+	CostProjectTieredOutput,
+	CostProjectOutput,
+	CostLookupFacilityFeeOutput,
+	CostLookupMPFSOutput,
+	CostLookupAnesthesiaOutput,
+	CostGetFacilitiesOutput,
+	CostHealthOutput,
+	CostGetStatsOutput,
+} from "./schemas/cost";
+
+import type {
 	NdcLookupOutput,
 	NdcBatchLookupOutput,
 	NdcSearchOutput,
@@ -713,5 +724,149 @@ export class NdcCategory {
 
 	async health(): Promise<NdcHealthOutput> {
 		return this.request<NdcHealthOutput>("ndc/health", {});
+	}
+}
+
+// =============================================================================
+// Cost Category - client.cost.*
+// =============================================================================
+
+const CostProjectTieredInputSchema = z.object({
+	cpt_codes: z.array(z.string().min(1)).optional(),
+	items: z
+		.array(
+			z.object({
+				cpt_code: z.string().min(1),
+				modifier: z.string().optional(),
+				quantity: z.number().int().min(1).optional(),
+			}),
+		)
+		.optional(),
+	zip_code: z.string().min(1),
+	include_anesthesia: z.boolean().optional(),
+	provider_ccn: z.string().optional(),
+});
+
+const CostProjectInputSchema = z.object({
+	cpt_codes: z.array(z.string().min(1)).min(1),
+	zip_code: z.string().min(1),
+});
+
+const CostLookupFacilityFeeInputSchema = z.object({
+	cpt_code: z.string().min(1),
+	zip_code: z.string().min(1),
+});
+
+const CostLookupMPFSInputSchema = z.object({
+	cpt_code: z.string().min(1),
+	zip_code: z.string().min(1),
+	modifier: z.string().optional(),
+});
+
+const CostLookupAnesthesiaInputSchema = z.object({
+	cpt_code: z.string().min(1),
+	zip_code: z.string().min(1),
+});
+
+const CostGetFacilitiesInputSchema = z.object({
+	zip_code: z.string().optional(),
+	state: z.string().optional(),
+});
+
+export type CostProjectTieredInput = z.infer<
+	typeof CostProjectTieredInputSchema
+>;
+export type CostProjectInput = z.infer<typeof CostProjectInputSchema>;
+export type CostLookupFacilityFeeInput = z.infer<
+	typeof CostLookupFacilityFeeInputSchema
+>;
+export type CostLookupMPFSInput = z.infer<typeof CostLookupMPFSInputSchema>;
+export type CostLookupAnesthesiaInput = z.infer<
+	typeof CostLookupAnesthesiaInputSchema
+>;
+export type CostGetFacilitiesInput = z.infer<
+	typeof CostGetFacilitiesInputSchema
+>;
+
+/**
+ * Cost Projection engine — 4-tier surgical/procedural cost estimates.
+ * - projectCostTiered(): Full 4-tier projection (Medicare, Commercial, 80th %ile, Billed)
+ * - projectCost(): Medicare-only cost projection
+ * - lookupFacilityFee(): DRG-based facility fee
+ * - lookupMPFS(): Medicare Physician Fee Schedule rate
+ * - lookupAnesthesia(): Anesthesia cost breakdown
+ * - getFacilities(): WCMSA designated medical centers
+ * - getStats(): Database statistics
+ * - health(): Engine health check
+ */
+export class CostCategory {
+	constructor(private request: RequestFunction) {}
+
+	async projectCostTiered(
+		input: CostProjectTieredInput,
+	): Promise<CostProjectTieredOutput> {
+		const validated = CostProjectTieredInputSchema.parse(input);
+		return this.request<CostProjectTieredOutput>(
+			"cost/projectCostTiered",
+			validated,
+			"POST",
+		);
+	}
+
+	async projectCost(input: CostProjectInput): Promise<CostProjectOutput> {
+		const validated = CostProjectInputSchema.parse(input);
+		return this.request<CostProjectOutput>(
+			"cost/projectCost",
+			validated,
+			"POST",
+		);
+	}
+
+	async lookupFacilityFee(
+		input: CostLookupFacilityFeeInput,
+	): Promise<CostLookupFacilityFeeOutput> {
+		const validated = CostLookupFacilityFeeInputSchema.parse(input);
+		return this.request<CostLookupFacilityFeeOutput>(
+			"cost/lookupFacilityFee",
+			validated,
+		);
+	}
+
+	async lookupMPFS(
+		input: CostLookupMPFSInput,
+	): Promise<CostLookupMPFSOutput> {
+		const validated = CostLookupMPFSInputSchema.parse(input);
+		return this.request<CostLookupMPFSOutput>(
+			"cost/lookupMPFS",
+			validated,
+		);
+	}
+
+	async lookupAnesthesia(
+		input: CostLookupAnesthesiaInput,
+	): Promise<CostLookupAnesthesiaOutput> {
+		const validated = CostLookupAnesthesiaInputSchema.parse(input);
+		return this.request<CostLookupAnesthesiaOutput>(
+			"cost/lookupAnesthesia",
+			validated,
+		);
+	}
+
+	async getFacilities(
+		input?: CostGetFacilitiesInput,
+	): Promise<CostGetFacilitiesOutput> {
+		const validated = CostGetFacilitiesInputSchema.parse(input ?? {});
+		return this.request<CostGetFacilitiesOutput>(
+			"cost/getFacilities",
+			validated,
+		);
+	}
+
+	async getStats(): Promise<CostGetStatsOutput> {
+		return this.request<CostGetStatsOutput>("cost/getStats", {});
+	}
+
+	async health(): Promise<CostHealthOutput> {
+		return this.request<CostHealthOutput>("cost/health", {});
 	}
 }
