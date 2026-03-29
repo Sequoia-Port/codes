@@ -21,6 +21,7 @@ export {
 	LcdCategory,
 	NcdCategory,
 	LifeExpectancyCategory,
+	CostCategory,
 } from "./engines";
 
 // =============================================================================
@@ -70,6 +71,13 @@ export type {
 	LELookupByAgeInput,
 	LELookupBatchInput,
 	LEGetTableInput,
+	// Cost
+	CostProjectTieredInput,
+	CostProjectInput,
+	CostLookupFacilityFeeInput,
+	CostLookupMPFSInput,
+	CostLookupAnesthesiaInput,
+	CostGetFacilitiesInput,
 } from "./engines";
 
 // =============================================================================
@@ -174,3 +182,18 @@ export type {
 	LEHealthOutput,
 	LEGetStatsOutput,
 } from "./schemas/life-expectancy";
+
+// Cost
+export type {
+	TierBreakdown,
+	TieredLineItem,
+	MPFSRate,
+	CostProjectTieredOutput,
+	CostProjectOutput,
+	CostLookupFacilityFeeOutput,
+	CostLookupMPFSOutput,
+	CostLookupAnesthesiaOutput,
+	CostGetFacilitiesOutput,
+	CostHealthOutput,
+	CostGetStatsOutput,
+} from "./schemas/cost";
