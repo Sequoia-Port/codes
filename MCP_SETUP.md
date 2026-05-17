@@ -53,7 +53,7 @@ In `.vscode/mcp.json`:
 
 ## Available Tools
 
-The MCP server exposes 3 tools:
+The MCP server exposes 5 tools:
 
 ### `searchCode`
 Search medical codes by description.
@@ -76,3 +76,25 @@ Search or look up Medicare coverage guidelines.
 - `id` (optional): guideline ID for direct lookup
 - `section` (optional): NCD only — section number
 - `limit` (optional): max results (1–200)
+
+### `ndcLookup`
+Look up, search, or explore the FDA NDC Directory.
+- `action` (required): `lookup`, `lookupBatch`, `search`, `fuzzy`, `getProduct`, `getLabeler`, `getPackages`, `crossRef`, `stats`
+- `ndc` / `ndcs` / `query` / `productNdc` / `labeler` (action-dependent)
+
+### `ratedAge`
+Comorbidity-adjusted rated age for Workers' Compensation MSAs. Tier-1 substrate (SEER, USRDS, Framingham, NHANES, CDC NCHS); every numeric claim carries a citation chain. Vendor LDB tables are never cited.
+
+- `action` (required): `propose`, `lookupHazardRatio`, `scoreComorbidity`, `getVersion`, `health`
+- `propose` parameters:
+  - `age` (required): claimant age in whole years
+  - `sex` (optional): `"M"` or `"F"`
+  - `comorbidities` (required): array of `{code, severity?, onset?, claim_id?}`
+  - `medications` (optional): array of `{rxnorm?, ndc?, atc_class?}` — triggers severity upgrades
+  - `claim_context` (optional): `{jurisdiction_state?, accepted_body_systems?}` for body-system gating
+  - `stacking_rule` (optional): `additive_v1` (default) or `multiplicative_rank_decay_v2`
+- `lookupHazardRatio`: `code` (required) — single ICD-10 longest-prefix HR lookup
+- `scoreComorbidity`: `codes`, `index` (`charlson` or `elixhauser`)
+- `getVersion` / `health`: no parameters
+
+Response includes: rated_age, contributors with T1/T2 citations, calculation_trace, confidence + reinsurance multiplier, alternative_stacking (v1/v2 side-by-side), ASOP 41 attestation, and a deterministic `case_signature_hash` for treaty audit.

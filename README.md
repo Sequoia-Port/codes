@@ -54,6 +54,7 @@ console.log(cptResults.results);
 ### Actuarial / Reference Data
 
 - **`client.lifeExpectancy`** - CDC/CMS WCMSA life expectancy actuarial tables
+- **`client.ratedAge`** - Comorbidity-adjusted rated age for WC MSAs (Tier-1 substrate: SEER, USRDS, Framingham, NHANES, CDC NCHS). Returns rated age + full audit trail with T1/T2 citations, calculation trace, ASOP 41 attestation, and deterministic case_signature_hash.
 
 ### Cost Projection
 
@@ -241,6 +242,106 @@ const version = await client.lifeExpectancy.getVersion();
 // Health check
 const health = await client.lifeExpectancy.health();
 ```
+
+### Rated Age (Comorbidity-Adjusted)
+
+Comorbidity-adjusted rated age for Workers' Compensation MSAs. Pairs naturally with `client.lifeExpectancy` — feed `rated_age` into a subsequent LE lookup to get a CMS-defensible rated life expectancy.
+
+Substrate is **Tier-1 anchored** (SEER 21 cancer, USRDS 2024 renal, Framingham + ARIC heart failure, NHANES COPD, CDC NCHS mortality baseline). **Vendor LDB tables are never cited as primary substrate.** Every numeric claim on the response carries a tier-marked citation chain.
+
+```typescript
+// Primary entry — rated age + full audit trail
+const result = await client.ratedAge.propose({
+  age: 65,
+  sex: "M",
+  comorbidities: [{ code: "I50.21" }, { code: "N18.6" }],
+});
+
+console.log(result.rated_age);                                // → 80
+console.log(result.confidence);                               // → "medium"
+console.log(result.recommended_reinsurance_multiplier);       // → 1.15
+console.log(result.contributors[0].citation.tier_marker);     // → "T1"
+console.log(result.contributors[0].citation.source_name);     // → "Framingham Heart Study + ARIC"
+console.log(result.calculation_trace);                        // ordered stacking steps (capped at 15y)
+console.log(result.alternative_stacking);                     // v1/v2 side-by-side comparison
+console.log(result.asop_attestation.methodology);             // ASOP 41 surface
+console.log(result.case_signature_hash);                      // deterministic 64-char hex
+```
+
+**Body-system gating** — moderate contributor inclusion against the case's accepted body systems:
+
+```typescript
+// Knee-fracture-only claim → F-code depression excluded
+const result = await client.ratedAge.propose({
+  age: 50, sex: "M",
+  comorbidities: [{ code: "F32.9" }, { code: "S52.501A" }],
+  claim_context: { accepted_body_systems: ["musculoskeletal"] },
+});
+console.log(result.body_system_gating_applied);  // → true
+console.log(result.contributors[0].body_system_moderation);
+// → "excluded: code F32.9 outside accepted body systems [musculoskeletal]"
+```
+
+**v2 multiplicative-rank-decay stacking** — actuarially-correct joint hazard with rank-decay to suppress double-counting on correlated comorbidities:
+
+```typescript
+const r = await client.ratedAge.propose({
+  age: 65, sex: "M",
+  comorbidities: [{ code: "I50.21" }, { code: "N18.6" }],
+  stacking_rule: "multiplicative_rank_decay_v2",
+});
+// Calculation trace adds: hr, adjusted_hr, decay_weight (0.7^rank),
+//                         cumulative_joint_hr per step.
+```
+
+**Medication-as-severity upgrade** — SGLT2-i / ARNI / immune checkpoint inhibitors / dialysis-related meds bump the matching comorbidity to a more severe HR cohort BEFORE the lookup:
+
+```typescript
+// Dapagliflozin (RxNorm 1488564) on I50 upgrades to symptomatic_HFrEF
+const r = await client.ratedAge.propose({
+  age: 65, sex: "M",
+  comorbidities: [{ code: "I50.21" }],
+  medications: [{ rxnorm: "1488564" }],
+});
+```
+
+**Single-code HR lookup**:
+
+```typescript
+const hr = await client.ratedAge.lookupHazardRatio({ code: "I50.21" });
+console.log(hr.matched);      // → true
+console.log(hr.hr);           // → 4.0
+console.log(hr.delta_years);  // → 14.0
+```
+
+**Charlson / Elixhauser scoring** (peer-reviewed sanity-check overlay):
+
+```typescript
+const score = await client.ratedAge.scoreComorbidity({
+  codes: ["I50.21", "N18.6"],
+  index: "charlson",
+});
+console.log(score.score);     // → 4
+console.log(score.category);  // → "high"
+```
+
+**Active version + corpus citations**:
+
+```typescript
+const v = await client.ratedAge.getVersion();
+console.log(v.hazard_table_version);  // → 1
+console.log(v.sources);               // T1/T2/T3-tier corpus list
+console.log(v.activated_at);
+```
+
+**Health check**:
+
+```typescript
+const h = await client.ratedAge.health();
+console.log(h.status);  // → "ok"
+```
+
+Full action reference: see `docs/api/rated-age.md` in [sqp-medical-codex](https://github.com/Sequoia-Port/sqp-medical-codex).
 
 ### Clinical Orchestrator
 

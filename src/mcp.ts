@@ -218,6 +218,171 @@ server.tool(
 );
 
 // =============================================================================
+// Tool 5: ratedAge
+// =============================================================================
+
+server.tool(
+	"ratedAge",
+	"Comorbidity-adjusted rated age for WC MSAs. Actions: propose (rated age + audit trail with T1/T2 citations + calculation trace + ASOP 41 attestation), lookupHazardRatio (single ICD-10 HR), scoreComorbidity (Charlson/Elixhauser), getVersion (active substrate), health.",
+	{
+		action: z
+			.enum([
+				"propose",
+				"lookupHazardRatio",
+				"scoreComorbidity",
+				"getVersion",
+				"health",
+			])
+			.default("propose")
+			.describe("The rated-age action to perform"),
+		// propose
+		age: z
+			.number()
+			.int()
+			.min(0)
+			.max(125)
+			.optional()
+			.describe("Claimant age in whole years (required for propose)"),
+		sex: z
+			.enum(["M", "F"])
+			.optional()
+			.describe("Claimant sex (optional, used for sex-stratified HR rows)"),
+		comorbidities: z
+			.array(
+				z.object({
+					code: z.string().describe("ICD-10 code (e.g. 'I50.21', 'N18.6')"),
+					severity: z.string().optional(),
+					onset: z.string().optional(),
+					claim_id: z
+						.string()
+						.optional()
+						.describe("Per-claim attribution for multi-claim cases"),
+				}),
+			)
+			.optional()
+			.describe("Comorbidity list (required for propose)"),
+		medications: z
+			.array(
+				z.object({
+					rxnorm: z.string().optional(),
+					ndc: z.string().optional(),
+					atc_class: z.string().optional(),
+				}),
+			)
+			.optional()
+			.describe("Optional medications — triggers severity upgrades"),
+		claim_context: z
+			.object({
+				jurisdiction_state: z.string().optional(),
+				accepted_body_systems: z
+					.array(z.string())
+					.optional()
+					.describe(
+						"Body-system buckets: mental-health, head-brain, chronic-pain, musculoskeletal, internal, other",
+					),
+			})
+			.optional()
+			.describe(
+				"Optional case context for body-system gating. NOTE: date_of_injury intentionally NOT in the signature hash (PHI scrub).",
+			),
+		stacking_rule: z
+			.enum(["additive_v1", "multiplicative_rank_decay_v2"])
+			.optional()
+			.describe("Stacking rule (default additive_v1)"),
+		// lookupHazardRatio
+		code: z
+			.string()
+			.optional()
+			.describe("ICD-10 code (required for lookupHazardRatio)"),
+		// scoreComorbidity
+		codes: z
+			.array(z.string())
+			.optional()
+			.describe("ICD-10 codes (required for scoreComorbidity)"),
+		index: z
+			.enum(["charlson", "elixhauser"])
+			.optional()
+			.describe("Comorbidity index (required for scoreComorbidity)"),
+	},
+	async ({
+		action,
+		age,
+		sex,
+		comorbidities,
+		medications,
+		claim_context,
+		stacking_rule,
+		code,
+		codes,
+		index,
+	}) => {
+		let result: unknown;
+
+		switch (action) {
+			case "propose":
+				if (age === undefined || age <= 0) {
+					return {
+						content: [
+							{ type: "text" as const, text: "age (positive integer) is required for propose" },
+						],
+					};
+				}
+				if (!comorbidities) {
+					return {
+						content: [
+							{ type: "text" as const, text: "comorbidities is required for propose (can be empty array)" },
+						],
+					};
+				}
+				result = await client.ratedAge.propose({
+					age,
+					sex,
+					comorbidities,
+					medications,
+					claim_context,
+					stacking_rule,
+				});
+				break;
+			case "lookupHazardRatio":
+				if (!code) {
+					return {
+						content: [
+							{ type: "text" as const, text: "code is required for lookupHazardRatio" },
+						],
+					};
+				}
+				result = await client.ratedAge.lookupHazardRatio({ code });
+				break;
+			case "scoreComorbidity":
+				if (!codes || codes.length === 0) {
+					return {
+						content: [
+							{ type: "text" as const, text: "codes (non-empty) is required for scoreComorbidity" },
+						],
+					};
+				}
+				if (!index) {
+					return {
+						content: [
+							{ type: "text" as const, text: "index ('charlson' or 'elixhauser') is required for scoreComorbidity" },
+						],
+					};
+				}
+				result = await client.ratedAge.scoreComorbidity({ codes, index });
+				break;
+			case "getVersion":
+				result = await client.ratedAge.getVersion();
+				break;
+			case "health":
+				result = await client.ratedAge.health();
+				break;
+		}
+
+		return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
+	},
+);
+
+// =============================================================================
 // Start
 // =============================================================================
 
