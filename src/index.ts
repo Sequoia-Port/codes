@@ -183,6 +183,23 @@ export type {
 	LEGetStatsOutput,
 } from "./schemas/life-expectancy";
 
+// Rated-Age Engine #14
+export type {
+	RatedAgeProposeInput,
+	RatedAgeProposeOutput,
+	RatedAgeLookupHazardRatioInput,
+	RatedAgeLookupHazardRatioOutput,
+	RatedAgeScoreComorbidityInput,
+	RatedAgeScoreComorbidityOutput,
+	RatedAgeGetVersionOutput,
+	RatedAgeHealthOutput,
+	RatedAgeContributor,
+	RatedAgeComorbidity,
+	RatedAgeMedication,
+	RatedAgeClaimContext,
+	RatedAgeCitation,
+} from "./schemas/rated-age";
+
 // Cost
 export type {
 	MethodologyEntry,

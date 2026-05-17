@@ -80,6 +80,22 @@ import type {
 	NdcHealthOutput,
 } from "./schemas/ndc";
 
+import type {
+	RatedAgeProposeInput,
+	RatedAgeProposeOutput,
+	RatedAgeLookupHazardRatioInput,
+	RatedAgeLookupHazardRatioOutput,
+	RatedAgeScoreComorbidityInput,
+	RatedAgeScoreComorbidityOutput,
+	RatedAgeGetVersionOutput,
+	RatedAgeHealthOutput,
+} from "./schemas/rated-age";
+import {
+	RatedAgeProposeInputSchema,
+	RatedAgeLookupHazardRatioInputSchema,
+	RatedAgeScoreComorbidityInputSchema,
+} from "./schemas/rated-age";
+
 // =============================================================================
 // Shared Types
 // =============================================================================
@@ -868,5 +884,108 @@ export class CostCategory {
 
 	async health(): Promise<CostHealthOutput> {
 		return this.request<CostHealthOutput>("cost/health", {});
+	}
+}
+
+// =============================================================================
+// RatedAge Category - client.ratedAge.*
+// =============================================================================
+
+/**
+ * Rated-Age Engine #14 — comorbidity-adjusted rated age for WC MSAs.
+ *
+ * Substrate is Tier-1/T2-anchored: SEER 21 (cancer), USRDS 2024 (renal),
+ * Framingham + ARIC (HF), NHANES (COPD), etc. Each contributor on the
+ * response carries a tier-marked citation chain (REQUIRED — engine never
+ * manufactures deltas without a citation).
+ *
+ * - propose(): primary entry; rated_age + audit trail (T1/T2 citations,
+ *              calculation trace, alt-stacking v1/v2 side-by-side, ASOP 41
+ *              attestation, case_signature_hash for treaty audit)
+ * - lookupHazardRatio(): single ICD-10 HR lookup (longest-prefix match)
+ * - scoreComorbidity(): Charlson Quan 2005 / Elixhauser Quan 2009
+ * - getVersion(): active substrate version + corpus citations
+ * - health(): pool ping + DB version
+ *
+ * @example
+ * ```typescript
+ * const result = await client.ratedAge.propose({
+ *   age: 65,
+ *   sex: "M",
+ *   comorbidities: [{ code: "I50.21" }, { code: "N18.6" }],
+ * });
+ * console.log(result.rated_age);                  // → 80
+ * console.log(result.confidence);                 // → "medium"
+ * console.log(result.contributors[0].citation.tier_marker);  // → "T1"
+ * console.log(result.calculation_trace);          // ordered stacking
+ * console.log(result.alternative_stacking);       // v1/v2 side-by-side
+ * console.log(result.asop_attestation);           // ASOP 41 fields
+ * console.log(result.case_signature_hash);        // deterministic SHA-256
+ * ```
+ *
+ * @example F-code body-system gating
+ * ```typescript
+ * // Knee-fracture-only claim → F-codes excluded
+ * const r = await client.ratedAge.propose({
+ *   age: 50, sex: "M",
+ *   comorbidities: [{ code: "F32.9" }, { code: "S52.501A" }],
+ *   claim_context: { accepted_body_systems: ["musculoskeletal"] },
+ * });
+ * console.log(r.body_system_gating_applied);  // → true
+ * console.log(r.contributors[0].body_system_moderation);
+ * // → "excluded: code F32.9 outside accepted body systems [musculoskeletal]"
+ * ```
+ *
+ * @example v2 multiplicative-rank-decay stacking
+ * ```typescript
+ * const r = await client.ratedAge.propose({
+ *   age: 65, sex: "M",
+ *   comorbidities: [{ code: "I50.21" }, { code: "N18.6" }],
+ *   stacking_rule: "multiplicative_rank_decay_v2",
+ * });
+ * console.log(r.calculation_trace[0].decay_weight);        // 1.0 (rank 0)
+ * console.log(r.calculation_trace[1].decay_weight);        // 0.7 (rank 1)
+ * console.log(r.calculation_trace[1].cumulative_joint_hr); // product
+ * ```
+ */
+export class RatedAgeCategory {
+	constructor(private request: RequestFunction) {}
+
+	async propose(input: RatedAgeProposeInput): Promise<RatedAgeProposeOutput> {
+		const validated = RatedAgeProposeInputSchema.parse(input);
+		return this.request<RatedAgeProposeOutput>(
+			"ratedAge/propose",
+			validated,
+			"POST",
+		);
+	}
+
+	async lookupHazardRatio(
+		input: RatedAgeLookupHazardRatioInput,
+	): Promise<RatedAgeLookupHazardRatioOutput> {
+		const validated = RatedAgeLookupHazardRatioInputSchema.parse(input);
+		return this.request<RatedAgeLookupHazardRatioOutput>(
+			"ratedAge/lookupHazardRatio",
+			validated,
+		);
+	}
+
+	async scoreComorbidity(
+		input: RatedAgeScoreComorbidityInput,
+	): Promise<RatedAgeScoreComorbidityOutput> {
+		const validated = RatedAgeScoreComorbidityInputSchema.parse(input);
+		return this.request<RatedAgeScoreComorbidityOutput>(
+			"ratedAge/scoreComorbidity",
+			validated,
+			"POST",
+		);
+	}
+
+	async getVersion(): Promise<RatedAgeGetVersionOutput> {
+		return this.request<RatedAgeGetVersionOutput>("ratedAge/getVersion", {});
+	}
+
+	async health(): Promise<RatedAgeHealthOutput> {
+		return this.request<RatedAgeHealthOutput>("ratedAge/health", {});
 	}
 }

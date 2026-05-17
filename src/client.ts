@@ -12,6 +12,7 @@ import {
 	LoincCategory,
 	NcdCategory,
 	NdcCategory,
+	RatedAgeCategory,
 	RxnormCategory,
 	SnomedCategory,
 } from "./engines";
@@ -181,6 +182,8 @@ export class SequoiaCodesClient {
 
 	/** Life Expectancy actuarial tables (CDC/CMS WCMSA standard) */
 	readonly lifeExpectancy: LifeExpectancyCategory;
+	/** Rated-Age Engine #14 — comorbidity-adjusted rated age for WC MSAs (T1-cited substrate, ASOP 41 attestation, deterministic case_signature_hash) */
+	readonly ratedAge: RatedAgeCategory;
 	/** Cost Projection engine — 4-tier surgical/procedural cost estimates (CMS PFS/IPPS + RAND + BLS CPI) */
 	readonly cost: CostCategory;
 
@@ -216,6 +219,7 @@ export class SequoiaCodesClient {
 
 		// Actuarial / reference data categories
 		this.lifeExpectancy = new LifeExpectancyCategory(boundRequest);
+		this.ratedAge = new RatedAgeCategory(boundRequest);
 		this.cost = new CostCategory(boundRequest);
 
 		// Guideline categories
