@@ -1,0 +1,66 @@
+name: Publish to npm
+
+# Publishes @sequoiaport/codes to npm automatically when you push a version tag,
+# e.g.  git tag v0.1.6-beta.0 && git push origin v0.1.6-beta.0
+#
+# Auth: OIDC "Trusted Publishing" — NO token is stored anywhere. The one-time
+# setup is on npmjs.com (see PUBLISHING.md). The short-lived OIDC credential is
+# minted per-run by GitHub and exchanged with npm; nothing to rotate or expire.
+#
+# Pre-release versions (anything with a hyphen, e.g. -beta.0) publish under the
+# `beta` dist-tag; clean semver versions publish as `latest`.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch: {} # allow manual runs from the Actions tab
+
+permissions:
+  contents: read
+  id-token: write # REQUIRED for OIDC trusted publishing + provenance
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+
+      # Trusted Publishing requires a recent npm (>= 11.5.1); Node 22 ships 10.x.
+      - name: Upgrade npm (OIDC trusted-publishing support)
+        run: npm install -g npm@latest
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # Guard: if this run was triggered by a tag, the tag must match the
+      # package.json version (prevents publishing a mismatched version).
+      - name: Verify tag matches package.json version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match package.json version $PKG_VERSION"
+            exit 1
+          fi
+
+      - name: Compute dist-tag (beta for pre-releases, else latest)
+        id: disttag
+        run: |
+          V="$(node -p "require('./package.json').version")"
+          case "$V" in
+            *-*) echo "tag=beta"   >> "$GITHUB_OUTPUT" ;;
+            *)   echo "tag=latest" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - name: Publish (OIDC trusted publishing + provenance)
+        run: npm publish --tag "${{ steps.disttag.outputs.tag }}" --access public --provenance
