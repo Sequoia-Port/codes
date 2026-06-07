@@ -9,7 +9,8 @@
     "sequoia-codes-mcp": "./dist/mcp.js"
   },
   "scripts": {
-    "build": "tsup"
+    "build": "tsup",
+    "release": "bash release.sh"
   },
   "keywords": [
     "sequoia",

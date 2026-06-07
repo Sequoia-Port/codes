@@ -1,5 +1,25 @@
 # Publishing `@sequoiaport/codes`
 
+## TL;DR — just run the script
+
+```bash
+cd codes
+./release.sh                      # auth (if needed) + build + publish current version
+# or, fully headless with a token you generated once:
+NPM_TOKEN=npm_xxxxxxxx ./release.sh
+# or hand off to CI (tag + push; GitHub Actions publishes via OIDC):
+./release.sh --tag-only
+# bump + release in one go:
+./release.sh --set-version 1.0.0
+```
+
+`release.sh` figures out auth (env token → persisted, existing session, or
+interactive `npm login`), builds, picks the right dist-tag (pre-release → `beta`,
+clean semver → `latest`), and publishes. The rest of this doc is the underlying
+mechanics + the one-time account setup.
+
+---
+
 Two paths, set up so you never run `npm login` again:
 
 - **CI (recommended, tokenless):** push a version tag → GitHub Actions publishes via npm **OIDC Trusted Publishing**. No token is stored anywhere.
