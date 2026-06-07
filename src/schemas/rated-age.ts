@@ -31,6 +31,12 @@ export const RatedAgeComorbiditySchema = z.object({
 	severity: z.string().optional(),
 	onset: z.string().optional(),
 	claim_id: z.string().optional(),
+	/**
+	 * Years since the clinical event (decimal). Phase Y RL4: when provided,
+	 * Stage 3 (time-decay) and Stage 4 (competing-risks) stratify by
+	 * survival-time. 0 or omitted = "no temporal information". Bounds [0,100].
+	 */
+	years_since_event: z.number().min(0).max(100).optional(),
 });
 
 export const RatedAgeMedicationSchema = z.object({
@@ -50,7 +56,8 @@ export const RatedAgeClaimContextSchema = z.object({
 // =============================================================================
 
 export const RatedAgeProposeInputSchema = z.object({
-	age: z.number().int().min(0).max(125),
+	// Engine enforces a positive integer in 1..125 (age<=0 and age>125 → 400).
+	age: z.number().int().min(1).max(125),
 	sex: z.enum(["M", "F"]).optional(),
 	comorbidities: z.array(RatedAgeComorbiditySchema),
 	medications: z.array(RatedAgeMedicationSchema).optional(),
@@ -112,6 +119,26 @@ export const RatedAgeASOPAttestationSchema = z.object({
 	data_sources: z.array(z.string()),
 });
 
+/**
+ * Rule-layer firing event — one entry per rule that fired during the request,
+ * across the six stages (Stage 0 severity-subcode, Stage 1 age-attenuation,
+ * Stage 2 axis-aggregation, Stage 3 time-decay, Stage 4 competing-risks,
+ * Stage 5 categorical-aggregation). Lets a reviewer reconstruct the full
+ * HR-transformation chain on top of the per-ICD substrate.
+ */
+export const RatedAgeRuleFireEventSchema = z.object({
+	stage: z.number().int(),
+	rule_id: z.string(),
+	rule_family: z.string(),
+	fired_because: z.string(),
+	removed_contributors: z.array(z.string()).optional(),
+	added_contributors: z.array(z.string()).optional(),
+	hr_before: z.number().optional(),
+	hr_after: z.number().optional(),
+	citation: z.string().optional(),
+	rule_version: z.string().optional(),
+});
+
 export const RatedAgeProposeOutputSchema = z.object({
 	rated_age: z.number().int(),
 	delta_years: z.number(),
@@ -131,6 +158,9 @@ export const RatedAgeProposeOutputSchema = z.object({
 	confidence_reason: z.string().optional(),
 	asop_attestation: RatedAgeASOPAttestationSchema.optional(),
 	body_system_gating_applied: z.boolean().optional(),
+	/** Rule-layer firings (severity-subcode / age-attenuation / axis-aggregation
+	 * / time-decay / competing-risks / categorical-aggregation) for audit. */
+	rule_fire_events: z.array(RatedAgeRuleFireEventSchema).optional(),
 });
 
 // =============================================================================
@@ -221,6 +251,9 @@ export type RatedAgeGetVersionOutput = z.infer<
 >;
 export type RatedAgeHealthOutput = z.infer<typeof RatedAgeHealthOutputSchema>;
 export type RatedAgeContributor = z.infer<typeof RatedAgeContributorSchema>;
+export type RatedAgeRuleFireEvent = z.infer<
+	typeof RatedAgeRuleFireEventSchema
+>;
 export type RatedAgeComorbidity = z.infer<typeof RatedAgeComorbiditySchema>;
 export type RatedAgeMedication = z.infer<typeof RatedAgeMedicationSchema>;
 export type RatedAgeClaimContext = z.infer<typeof RatedAgeClaimContextSchema>;

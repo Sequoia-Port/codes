@@ -54,7 +54,7 @@ console.log(cptResults.results);
 ### Actuarial / Reference Data
 
 - **`client.lifeExpectancy`** - CDC/CMS WCMSA life expectancy actuarial tables
-- **`client.ratedAge`** - Comorbidity-adjusted rated age for WC MSAs (Tier-1 substrate: SEER, USRDS, Framingham, NHANES, CDC NCHS). Returns rated age + full audit trail with T1/T2 citations, calculation trace, ASOP 41 attestation, and deterministic case_signature_hash.
+- **`client.ratedAge`** - Comorbidity-adjusted rated age for WC MSAs (Tier-1 substrate: SEER, USRDS, Framingham, NHANES, CDC NCHS). Returns rated age + full audit trail with T1/T2 citations, calculation trace, `rule_fire_events` (rule-layer firings), ASOP 41 attestation, and deterministic case_signature_hash.
 
 ### Cost Projection
 
