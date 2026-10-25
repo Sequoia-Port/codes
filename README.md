@@ -11,8 +11,10 @@ Query **ICD-10**, **CPT**, **HCPCS**, **SNOMED CT**, **LOINC**, **RxNorm**, and 
 ## Installation
 
 ```bash
-npm install @sequoiaport/codes
+npm install @sequoiaport/codes zod
 ```
+
+`zod` 4.6.6 or later is a peer dependency: install it alongside the SDK (npm 7+ does this automatically).
 
 ## Quick Start
 

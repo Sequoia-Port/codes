@@ -494,7 +494,7 @@ const NcdIdentifyGuidelineInputSchema = z
 		section: z.string().optional(),
 	})
 	.refine((data) => data.id || data.section, {
-		message: "Either id or section must be provided",
+		error: "Either id or section must be provided",
 	});
 
 export type NcdSearchGuidelinesInput = z.infer<

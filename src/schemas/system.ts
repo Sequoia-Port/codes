@@ -17,12 +17,12 @@ export const GetResultOutputSchema = z.object({
 	request_id: z.string(),
 	status: z.enum(["pending", "running", "completed", "failed"]),
 	query: z.string().optional(),
-	result: z.record(z.unknown()).optional(),
+	result: z.record(z.string(), z.unknown()).optional(),
 	error: z.string().optional(),
 });
 
 /** Engine status record */
-export const EngineStatusSchema = z.record(z.enum(["ok", "error", "unknown"]));
+export const EngineStatusSchema = z.record(z.string(), z.enum(["ok", "error", "unknown"]));
 
 /** health output */
 export const HealthOutputSchema = z.object({
