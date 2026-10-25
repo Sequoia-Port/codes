@@ -23,24 +23,24 @@ export const CoverageCheckInputSchema = z.object({
 export const DiagnosisToProceduresOutputSchema = z.object({
 	snomed_id: z.string().optional(),
 	icd10_code: z.string().optional(),
-	icd10_mappings: z.array(z.record(z.unknown())).optional(),
-	procedures: z.array(z.record(z.unknown())).optional(),
+	icd10_mappings: z.array(z.record(z.string(), z.unknown())).optional(),
+	procedures: z.array(z.record(z.string(), z.unknown())).optional(),
 });
 
 /** coverage_check output */
 export const CoverageCheckOutputSchema = z.object({
 	cpt_code: z.string(),
 	icd10_code: z.string().optional(),
-	lcd: z.record(z.unknown()).optional(),
+	lcd: z.record(z.string(), z.unknown()).optional(),
 	has_guidelines: z.boolean(),
 	diagnosis_covered: z.boolean().optional(),
 });
 
 /** get_categories output */
 export const GetCategoriesOutputSchema = z.object({
-	snomed_semantic_tags: z.record(z.unknown()).optional(),
-	icd10_chapters: z.array(z.record(z.unknown())).optional(),
-	cpt_categories: z.array(z.record(z.unknown())).optional(),
+	snomed_semantic_tags: z.record(z.string(), z.unknown()).optional(),
+	icd10_chapters: z.array(z.record(z.string(), z.unknown())).optional(),
+	cpt_categories: z.array(z.record(z.string(), z.unknown())).optional(),
 });
 
 // =============================================================================

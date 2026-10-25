@@ -1,6 +1,6 @@
 {
   "name": "@sequoiaport/codes",
-  "version": "0.1.6",
+  "version": "0.2.0-beta.0",
   "description": "Retrieve ICD-10, CPT, SNOMED, RxNorm, LOINC, NDC, cost projections, life expectancy, and comorbidity-adjusted rated age via the Sequoia Codes API.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -60,11 +60,14 @@
     "access": "public"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.1",
-    "zod": "^3.23.0"
+    "@modelcontextprotocol/sdk": "^1.23.0"
+  },
+  "peerDependencies": {
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "tsup": "^8.4.0",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "zod": "4.6.7"
   }
 }
